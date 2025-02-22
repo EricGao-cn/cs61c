@@ -12,6 +12,7 @@ main:
     # Fill the array with 0's
     li t1 0  # t1 is the index
     li t2 10 # t2 is the size of the array
+    addi t3 t0 0
 
 loop:
     # Store 0 at the current index
@@ -22,8 +23,10 @@ loop:
     addi t0 t0 4
     # Check if we are done
     # If not, loop
-    bge t2 t1 loop
+    bne t2 t1 loop
 
     # Exit the program
+    mv a0 t3
+    jal free
     li a0 0
     jal exit
