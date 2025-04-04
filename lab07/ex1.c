@@ -1,3 +1,4 @@
+#include <emmintrin.h>
 #include <time.h>
 #include <stdio.h>
 #include <x86intrin.h>
@@ -53,7 +54,22 @@ long long int sum_simd(int vals[NUM_ELEMS]) {
 
     for(unsigned int w = 0; w < OUTER_ITERATIONS; w++) {
         /* YOUR CODE GOES HERE */
+        __m128i sum_vec = _mm_setzero_si128();
+        for (unsigned int i = 0; i < NUM_ELEMS / 4 * 4; i += 4) {
+            __m128i tmp_vec = _mm_loadu_si128((__m128i*) (vals + i));
+            __m128i cmp_vec = _mm_cmpgt_epi32(tmp_vec, _127);
+            tmp_vec = _mm_and_si128(cmp_vec, tmp_vec);
+            sum_vec = _mm_add_epi32(sum_vec, tmp_vec);
+        }
+        int tmp_arr[4];
+        _mm_storeu_si128((__m128i *) tmp_arr, sum_vec);
+        result += (tmp_arr[0] + tmp_arr[1] + tmp_arr[2] + tmp_arr[3]);
 
+        for (unsigned int i = NUM_ELEMS / 4 * 4; i < NUM_ELEMS; i++) {
+          if (vals[i] >= 128) {
+                result += vals[i];
+            }
+        }
         /* Hint: you'll need a tail case. */
     }
 
@@ -72,7 +88,44 @@ long long int sum_simd_unrolled(int vals[NUM_ELEMS]) {
     for(unsigned int w = 0; w < OUTER_ITERATIONS; w++) {
         /* YOUR CODE GOES HERE */
         /* Copy your sum_simd() implementation here, and unroll it */
+        __m128i sum_vec_1 = _mm_setzero_si128();
+        __m128i sum_vec_2 = _mm_setzero_si128();
+        __m128i sum_vec_3 = _mm_setzero_si128();
+        __m128i sum_vec_4 = _mm_setzero_si128();
+        for (unsigned int i = 0; i < NUM_ELEMS / 16 * 16; i += 16) {
+            __m128i tmp_vec_1 = _mm_loadu_si128((__m128i*) (vals + i));
+            __m128i tmp_vec_2 = _mm_loadu_si128((__m128i*) (vals + i + 4));
+            __m128i tmp_vec_3 = _mm_loadu_si128((__m128i*) (vals + i + 8));
+            __m128i tmp_vec_4 = _mm_loadu_si128((__m128i*) (vals + i + 12));
+            
+            __m128i cmp_vec_1 = _mm_cmpgt_epi32(tmp_vec_1, _127);
+            __m128i cmp_vec_2 = _mm_cmpgt_epi32(tmp_vec_2, _127);
+            __m128i cmp_vec_3 = _mm_cmpgt_epi32(tmp_vec_3, _127);
+            __m128i cmp_vec_4 = _mm_cmpgt_epi32(tmp_vec_4, _127);
+            tmp_vec_1 = _mm_and_si128(cmp_vec_1, tmp_vec_1);
+            tmp_vec_2 = _mm_and_si128(cmp_vec_2, tmp_vec_2);
+            tmp_vec_3 = _mm_and_si128(cmp_vec_3, tmp_vec_3);
+            tmp_vec_4 = _mm_and_si128(cmp_vec_4, tmp_vec_4);
 
+            sum_vec_1 = _mm_add_epi32(sum_vec_1, tmp_vec_1);
+            sum_vec_2 = _mm_add_epi32(sum_vec_2, tmp_vec_2);
+            sum_vec_3 = _mm_add_epi32(sum_vec_3, tmp_vec_3);
+            sum_vec_4 = _mm_add_epi32(sum_vec_4, tmp_vec_4);
+        }
+        sum_vec_1 = _mm_add_epi32(sum_vec_1, sum_vec_2);
+        sum_vec_3 = _mm_add_epi32(sum_vec_3, sum_vec_4);
+        sum_vec_1 = _mm_add_epi32(sum_vec_1, sum_vec_3);
+
+        int tmp_arr[4];
+        _mm_storeu_si128((__m128i *) tmp_arr, sum_vec_1);
+        result += (tmp_arr[0] + tmp_arr[1] + tmp_arr[2] + tmp_arr[3]);
+
+        for (unsigned int i = NUM_ELEMS / 16 * 16; i < NUM_ELEMS; i++) {
+          if (vals[i] >= 128) {
+                result += vals[i];
+            }
+        }
+ 
         /* Hint: you'll need 1 or maybe 2 tail cases here. */
     }
 
