@@ -10,4 +10,5 @@
 - proj3: [CS61CPU](https://web.archive.org/web/20241219154547/https://cs61c.org/fa24/projects/proj3/) 
     - [Repository](https://github.com/EricGao-cn/cs61c-proj3)
 - proj4: [CS61kaChow](https://web.archive.org/web/20241224171225/https://cs61c.org/fa24/projects/proj4/) 
-    - **TBD**
+    - This project can only be done in *Hive Machine*
+
